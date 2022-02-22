@@ -2,8 +2,8 @@
 {
     public class Dummy
     {
-        private Guid Id { get; set; }
-        private string Name { get; set; }
-        private int Age { get; set; }
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
     }
 }

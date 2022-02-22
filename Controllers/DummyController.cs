@@ -2,32 +2,30 @@
 using Microsoft.AspNetCore.Mvc;
 using projectTest.Domain;
 using projectTest.Domain.Models;
+using projectTest.Services.Interfaces;
 
 namespace projectTest.Controllers
 {
-
-    [Route("api/[controller]")]
+    [ApiController]
+    [Route("[controller]")]
     public class DummyController : Controller
     {
         private readonly IMapper _mapper;
+        private readonly IDummyService _dummyService;
 
-        public DummyController(IMapper mapper)
+        public DummyController(IMapper mapper, IDummyService dummyService)
         {
             _mapper = mapper;
+            _dummyService = dummyService;
         }
+
 
         // GET: api/<controller>  
         [HttpGet]
-        public Dummy Get()
+        public List<Dummy> GetAll()
         {
-            DummyDto dummyDTO = new DummyDto()
-            {
-                Id = Guid.NewGuid(),
-                Name = "Dummy 1",
-                Age = 25
-            };
-
-            return _mapper.Map<Dummy>(dummyDTO);
+            return _dummyService.GetAllDummies();
+            //return _mapper.Map<Dummy>(dummyDTO);
         }
     }
 }
