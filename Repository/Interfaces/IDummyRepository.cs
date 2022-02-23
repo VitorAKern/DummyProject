@@ -4,6 +4,10 @@ namespace projectTest.Repository.Interfaces
 {
     public interface IDummyRepository
     {
-        List<Dummy> GetAllDummies();
+        Task<List<Dummy>> GetDummyAsync(string query);
+        Task<Dummy> GetDummyAsync(Guid id);
+        Task AddDummyAsync(Dummy item);
+        Task UpdateDummyAsync(Guid id, Dummy item);
+        Task DeleteDummyAsync(Guid id);
     }
 }

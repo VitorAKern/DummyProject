@@ -1,14 +1,15 @@
 ﻿using Microsoft.Azure.Cosmos;
 using projectTest.Domain.Models;
-using projectTest.Repository.Interfaces;
+using projectTest.Services.Interfaces;
 
-namespace projectTest.Repository
+namespace projectTest.Services
 {
-    public class DummyRepository : IDummyRepository
+
+    public class CosmosDbService : ICosmosDbService
     {
         private Container _container;
 
-        public DummyRepository(
+        public CosmosDbService(
             CosmosClient dbClient,
             string databaseName,
             string containerName)
@@ -16,17 +17,17 @@ namespace projectTest.Repository
             this._container = dbClient.GetContainer(databaseName, containerName);
         }
 
-        public async Task AddDummyAsync(Dummy item)
+        public async Task AddItemAsync(Dummy item)
         {
             await this._container.CreateItemAsync<Dummy>(item, new PartitionKey(item.Id.ToString()));
         }
 
-        public async Task DeleteDummyAsync(Guid id)
+        public async Task DeleteItemAsync(Guid id)
         {
             await this._container.DeleteItemAsync<Dummy>(id.ToString(), new PartitionKey(id.ToString()));
         }
 
-        public async Task<Dummy> GetDummyAsync(Guid id)
+        public async Task<Dummy> GetItemAsync(Guid id)
         {
             try
             {
@@ -40,7 +41,7 @@ namespace projectTest.Repository
 
         }
 
-        public async Task<List<Dummy>> GetDummyAsync(string queryString)
+        public async Task<IEnumerable<Dummy>> GetItemsAsync(string queryString)
         {
             var query = this._container.GetItemQueryIterator<Dummy>(new QueryDefinition(queryString));
             List<Dummy> results = new List<Dummy>();
@@ -54,7 +55,7 @@ namespace projectTest.Repository
             return results;
         }
 
-        public async Task UpdateDummyAsync(Guid id, Dummy item)
+        public async Task UpdateItemAsync(Guid id, Dummy item)
         {
             await this._container.UpsertItemAsync<Dummy>(item, new PartitionKey(id.ToString()));
         }

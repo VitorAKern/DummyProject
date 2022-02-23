@@ -4,6 +4,10 @@ namespace projectTest.Services.Interfaces
 {
     public interface IDummyService
     {
-            List<Dummy> GetAllDummies();
+        public Task<List<Dummy>> GetAllDummies();
+        Task<Dummy> CreateDummyAsync(Dummy dummy);
+        Task DeleteDummyAsync(Guid id);
+        Task UpdateDummyAsync(Guid id, Dummy item);
+
     }
 }

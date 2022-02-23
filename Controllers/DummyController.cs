@@ -20,12 +20,29 @@ namespace projectTest.Controllers
         }
 
 
-        // GET: api/<controller>  
+        //GET: api/<controller>  
         [HttpGet]
-        public List<Dummy> GetAll()
+        public Task<List<Dummy>> GetAll()
         {
             return _dummyService.GetAllDummies();
-            //return _mapper.Map<Dummy>(dummyDTO);
+        }
+
+        [HttpPost]
+        public Task<Dummy> Post(DummyDto request)
+        {
+            return _dummyService.CreateDummyAsync(_mapper.Map<Dummy>(request));
+        }
+
+        [HttpPatch]
+        public Task Patch(Guid id, DummyDto request)
+        {
+            return _dummyService.UpdateDummyAsync(id, _mapper.Map<Dummy>(request));
+        }
+
+        [HttpDelete]
+        public void Delete(Guid id)
+        {
+            _dummyService.DeleteDummyAsync(id);
         }
     }
 }
