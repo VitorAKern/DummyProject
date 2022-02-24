@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.Azure.Cosmos;
+using projectTest.Domain.DSO;
 using projectTest.Domain.Models;
 using projectTest.Repository.Interfaces;
 
@@ -11,16 +14,17 @@ namespace projectTest.Repository
         public DummyRepository(
             CosmosClient dbClient,
             string databaseName,
-            string containerName)
+            string containerName
+            )
         {
             this._container = dbClient.GetContainer(databaseName, containerName);
         }
 
-        public async Task AddDummyAsync(Dummy item)
+        public async Task<DummyDso> AddDummyAsync(DummyDso item)
         {
             item.Id = Guid.NewGuid();
-
-            await this._container.CreateItemAsync<Dummy>(item, new PartitionKey(item.Id.ToString()));
+            var response = await _container.CreateItemAsync(item, new PartitionKey(item.Id.ToString()));
+            return response;    
         }
 
         public async Task DeleteDummyAsync(Guid id)
@@ -28,11 +32,11 @@ namespace projectTest.Repository
             await this._container.DeleteItemAsync<Dummy>(id.ToString(), new PartitionKey(id.ToString()));
         }
 
-        public async Task<Dummy> GetDummyAsync(Guid id)
+        public async Task<DummyDso> GetDummyAsync(Guid id)
         {
             try
             {
-                ItemResponse<Dummy> response = await this._container.ReadItemAsync<Dummy>(id.ToString(), new PartitionKey(id.ToString()));
+                ItemResponse<DummyDso> response = await this._container.ReadItemAsync<DummyDso>(id.ToString(), new PartitionKey(id.ToString()));
                 return response.Resource;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -42,10 +46,10 @@ namespace projectTest.Repository
 
         }
 
-        public async Task<List<Dummy>> GetDummyAsync(string queryString)
+        public async Task<List<DummyDso>> GetDummyAsync(string queryString)
         {
-            var query = this._container.GetItemQueryIterator<Dummy>(new QueryDefinition(queryString));
-            List<Dummy> results = new List<Dummy>();
+            var query = this._container.GetItemQueryIterator<DummyDso>(new QueryDefinition(queryString));
+            List<DummyDso> results = new List<DummyDso>();
             while (query.HasMoreResults)
             {
                 var response = await query.ReadNextAsync();
@@ -56,9 +60,23 @@ namespace projectTest.Repository
             return results;
         }
 
-        public async Task UpdateDummyAsync(Guid id, Dummy item)
+        public async Task<bool> UpdateDummyAsync(Guid id, JsonPatchDocument item)
         {
-            await this._container.UpsertItemAsync<Dummy>(item, new PartitionKey(id.ToString()));
+            try
+            {
+                var dummy = await this._container.ReadItemAsync<DummyDso>(id.ToString(), new PartitionKey(id.ToString()));
+
+                if (dummy != null)
+                {
+                    item.ApplyTo(dummy.Resource);
+                    await _container.UpsertItemAsync(dummy.Resource, new PartitionKey(id.ToString()));
+                }
+                return true;
+            }
+            catch (Exception ex) {
+
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

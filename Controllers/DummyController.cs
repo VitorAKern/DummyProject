@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using projectTest.Domain;
 using projectTest.Domain.DSO;
@@ -29,15 +30,19 @@ namespace projectTest.Controllers
         }
 
         [HttpPost]
-        public Task<Dummy> Post(DummyDto request)
+        public async Task<Dummy> Post(DummyDto request)
         {
-            return _dummyService.CreateDummyAsync(_mapper.Map<DummyDso>(request));
+            var response = await _dummyService.CreateDummyAsync(_mapper.Map<Dummy>(request));
+            return response;
         }
 
-        [HttpPatch]
-        public Task Patch(Guid id, DummyDto request)
+        [HttpPatch("{id}")]
+        public async Task Patch([FromRoute] Guid id, [FromBody] JsonPatchDocument request)
         {
-            return _dummyService.UpdateDummyAsync(id, _mapper.Map<DummyDso>(request));
+            if (request != null)
+            {
+                await _dummyService.UpdateDummyAsync(id, request);
+            }
         }
 
         [HttpDelete]

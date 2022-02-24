@@ -8,7 +8,8 @@ namespace projectTest.Domain
     {
         public AutoMapperProfile()
         {
-            CreateMap<DummyDto, DummyDso>();
+            CreateMap<DummyDto, Dummy>();
+            CreateMap<Dummy, DummyDso>();
             CreateMap<DummyDso, Dummy>();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Polly;
 using projectTest.Domain.DSO;
 using projectTest.Domain.Models;
@@ -19,7 +20,7 @@ namespace projectTest.Services
             _mapper = mapper;
         }
 
-        public async Task<Dummy> CreateDummyAsync(DummyDso dummy)
+        public async Task<Dummy> CreateDummyAsync(Dummy dummy)
         {
             try
             {
@@ -33,7 +34,7 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return _dummyRepo.AddDummyAsync(_mapper.Map<Dummy>(dummy));
+                    return await _dummyRepo.AddDummyAsync(_mapper.Map<DummyDso>(dummy));
                 });
 
                 return response;
@@ -64,8 +65,8 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    response = await _dummyRepo.GetDummyAsync("SELECT * FROM Dummy");
-                      
+                    response = _mapper.Map<List<DummyDso>, List<Dummy>>(_dummyRepo.GetDummyAsync("SELECT * FROM Dummy").GetAwaiter().GetResult());
+                   // mapper.Map<Source[], List<Destination>>(sources);
                     return response;
                 });
 
@@ -76,32 +77,7 @@ namespace projectTest.Services
                 throw ex;
             }
         }
-        public async Task DeleteDummyAsync(Guid id)
-        {
-            try
-            {
-                var maxRetryAttempts = 3;
-                var pauseBetweenFailures = TimeSpan.FromSeconds(2);
-                
-
-                var retryPolicy = Policy
-                    .Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(maxRetryAttempts, i => pauseBetweenFailures);
-
-                await retryPolicy.ExecuteAsync(async () =>
-                {
-                    return _dummyRepo.DeleteDummyAsync(id).GetAwaiter();
-                });
-
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            
-        }
-
-        public async Task UpdateDummyAsync(Guid id, DummyDso item)
+        public async Task<bool> DeleteDummyAsync(Guid id)
         {
             try
             {
@@ -115,7 +91,29 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return _dummyRepo.UpdateDummyAsync(id, _mapper.Map<Dummy>(item)).GetAwaiter();
+                    _dummyRepo.DeleteDummyAsync(id).GetAwaiter();
+                });
+                return true;
+            }
+            catch { }
+            return false;
+        }
+
+        public async Task UpdateDummyAsync(Guid id, JsonPatchDocument item)
+        {
+            try
+            {
+                var maxRetryAttempts = 3;
+                var pauseBetweenFailures = TimeSpan.FromSeconds(2);
+
+
+                var retryPolicy = Policy
+                    .Handle<HttpRequestException>()
+                    .WaitAndRetryAsync(maxRetryAttempts, i => pauseBetweenFailures);
+
+                await retryPolicy.ExecuteAsync(async () =>
+                {
+                    return await _dummyRepo.UpdateDummyAsync(id, item);
                 });
 
             }
@@ -124,7 +122,7 @@ namespace projectTest.Services
                 throw ex;
             }
         }
-       
+
     }
 }
 
