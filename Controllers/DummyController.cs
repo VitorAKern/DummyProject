@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using projectTest.Domain;
+using projectTest.Domain.DSO;
 using projectTest.Domain.Models;
 using projectTest.Services.Interfaces;
 
@@ -30,13 +31,13 @@ namespace projectTest.Controllers
         [HttpPost]
         public Task<Dummy> Post(DummyDto request)
         {
-            return _dummyService.CreateDummyAsync(_mapper.Map<Dummy>(request));
+            return _dummyService.CreateDummyAsync(_mapper.Map<DummyDso>(request));
         }
 
         [HttpPatch]
         public Task Patch(Guid id, DummyDto request)
         {
-            return _dummyService.UpdateDummyAsync(id, _mapper.Map<Dummy>(request));
+            return _dummyService.UpdateDummyAsync(id, _mapper.Map<DummyDso>(request));
         }
 
         [HttpDelete]

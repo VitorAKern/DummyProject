@@ -18,6 +18,8 @@ namespace projectTest.Repository
 
         public async Task AddDummyAsync(Dummy item)
         {
+            item.Id = Guid.NewGuid();
+
             await this._container.CreateItemAsync<Dummy>(item, new PartitionKey(item.Id.ToString()));
         }
 

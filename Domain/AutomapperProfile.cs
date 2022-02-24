@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using projectTest.Domain.DSO;
 using projectTest.Domain.Models;
 
 namespace projectTest.Domain
@@ -7,7 +8,8 @@ namespace projectTest.Domain
     {
         public AutoMapperProfile()
         {
-            CreateMap<DummyDto, Dummy>();
+            CreateMap<DummyDto, DummyDso>();
+            CreateMap<DummyDso, Dummy>();
         }
     }
 }

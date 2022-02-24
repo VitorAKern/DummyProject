@@ -1,4 +1,6 @@
-﻿using Polly;
+﻿using AutoMapper;
+using Polly;
+using projectTest.Domain.DSO;
 using projectTest.Domain.Models;
 using projectTest.Repository.Interfaces;
 using projectTest.Services.Interfaces;
@@ -9,13 +11,15 @@ namespace projectTest.Services
     public class DummyService : IDummyService
     {
         private readonly IDummyRepository _dummyRepo;
+        private readonly IMapper _mapper;
 
-        public DummyService(IDummyRepository dummyRepo)
+        public DummyService(IDummyRepository dummyRepo, IMapper mapper)
         {
             _dummyRepo = dummyRepo;
+            _mapper = mapper;
         }
 
-        public async Task<Dummy> CreateDummyAsync(Dummy dummy)
+        public async Task<Dummy> CreateDummyAsync(DummyDso dummy)
         {
             try
             {
@@ -29,7 +33,7 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return _dummyRepo.AddDummyAsync(dummy);
+                    return _dummyRepo.AddDummyAsync(_mapper.Map<Dummy>(dummy));
                 });
 
                 return response;
@@ -97,7 +101,7 @@ namespace projectTest.Services
             
         }
 
-        public async Task UpdateDummyAsync(Guid id, Dummy item)
+        public async Task UpdateDummyAsync(Guid id, DummyDso item)
         {
             try
             {
@@ -111,7 +115,7 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return _dummyRepo.UpdateDummyAsync(id, item).GetAwaiter();
+                    return _dummyRepo.UpdateDummyAsync(id, _mapper.Map<Dummy>(item)).GetAwaiter();
                 });
 
             }
