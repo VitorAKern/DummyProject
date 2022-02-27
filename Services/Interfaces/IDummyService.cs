@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
-using projectTest.Domain.Models;
+using SharedDummy.Domain.Models;
 
 namespace projectTest.Services.Interfaces
 {

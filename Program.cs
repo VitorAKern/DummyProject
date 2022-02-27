@@ -1,8 +1,8 @@
-using projectTest.Domain.Models;
 using projectTest.Repository;
 using projectTest.Repository.Interfaces;
 using projectTest.Services;
 using projectTest.Services.Interfaces;
+using projectTest.Services.ServiceBus;
 using System.Configuration;
 
 
@@ -35,7 +35,7 @@ builder.Services.AddSingleton<IDummyRepository>(cosmosDbService);
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddTransient<IQueueService, QueueService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -43,6 +43,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IDummyService, DummyService>();
+//builder.Services.AddScoped<IDummyRepository, OperationBlobRepository>();
 
 var app = builder.Build();
 

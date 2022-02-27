@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using projectTest.Domain;
-using projectTest.Domain.DSO;
-using projectTest.Domain.Models;
 using projectTest.Services.Interfaces;
+using SharedDummy.Domain;
+using SharedDummy.Domain.Models;
 
 namespace projectTest.Controllers
 {

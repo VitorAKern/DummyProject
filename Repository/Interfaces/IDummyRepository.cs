@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
-using projectTest.Domain.DSO;
-using projectTest.Domain.Models;
+using SharedDummy.Domain.DSO;
 
 namespace projectTest.Repository.Interfaces
 {

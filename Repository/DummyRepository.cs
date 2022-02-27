@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Azure.Cosmos;
-using projectTest.Domain.DSO;
-using projectTest.Domain.Models;
 using projectTest.Repository.Interfaces;
+using SharedDummy.Domain.DSO;
+using SharedDummy.Domain.Models;
 
 namespace projectTest.Repository
 {
@@ -22,7 +22,6 @@ namespace projectTest.Repository
 
         public async Task<DummyDso> AddDummyAsync(DummyDso item)
         {
-            item.Id = Guid.NewGuid();
             var response = await _container.CreateItemAsync(item, new PartitionKey(item.Id.ToString()));
             return response;    
         }

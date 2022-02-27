@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Polly;
-using projectTest.Domain.DSO;
-using projectTest.Domain.Models;
 using projectTest.Repository.Interfaces;
 using projectTest.Services.Interfaces;
+using projectTest.Services.ServiceBus;
+using SharedDummy.Domain;
+using SharedDummy.Domain.DSO;
+using SharedDummy.Domain.Models;
 using System.Text.Json;
 
 namespace projectTest.Services
@@ -13,17 +15,22 @@ namespace projectTest.Services
     {
         private readonly IDummyRepository _dummyRepo;
         private readonly IMapper _mapper;
+        private readonly IQueueService _queue;
 
-        public DummyService(IDummyRepository dummyRepo, IMapper mapper)
+        public DummyService(IDummyRepository dummyRepo, IMapper mapper, IQueueService queue)
         {
             _dummyRepo = dummyRepo;
             _mapper = mapper;
+            _queue = queue;
         }
 
         public async Task<Dummy> CreateDummyAsync(Dummy dummy)
         {
             try
             {
+                if (dummy.Id == Guid.Empty)
+                    dummy.Id = Guid.NewGuid();
+
                 var maxRetryAttempts = 3;
                 var pauseBetweenFailures = TimeSpan.FromSeconds(2);
                 Dummy response = new Dummy();
@@ -34,7 +41,14 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return await _dummyRepo.AddDummyAsync(_mapper.Map<DummyDso>(dummy));
+                await _dummyRepo.AddDummyAsync(_mapper.Map<DummyDso>(dummy));
+
+                ServiceBusModel sbm = new ServiceBusModel {
+                    Method = Method.POST,
+                    DummyDso = _mapper.Map<DummyDso>(dummy),
+                };
+
+                    await _queue.SendMessageAsync(sbm, "vkqueue");
                 });
 
                 return response;
@@ -65,9 +79,7 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    response = _mapper.Map<List<DummyDso>, List<Dummy>>(_dummyRepo.GetDummyAsync("SELECT * FROM Dummy").GetAwaiter().GetResult());
-                   // mapper.Map<Source[], List<Destination>>(sources);
-                    return response;
+                    return _mapper.Map<List<DummyDso>, List<Dummy>>(await _dummyRepo.GetDummyAsync("SELECT * FROM Dummy"));
                 });
 
                 return response;
@@ -92,6 +104,14 @@ namespace projectTest.Services
                 await retryPolicy.ExecuteAsync(async () =>
                 {
                     _dummyRepo.DeleteDummyAsync(id).GetAwaiter();
+
+                    ServiceBusModel sbm = new ServiceBusModel
+                    {
+                        Method = Method.DELETE,
+                        DummyDso = new DummyDso { Id = id},
+                    };
+
+                    await _queue.SendMessageAsync(sbm, "vkqueue");
                 });
                 return true;
             }
@@ -113,7 +133,16 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return await _dummyRepo.UpdateDummyAsync(id, item);
+                    await _dummyRepo.UpdateDummyAsync(id, item);
+
+                    ServiceBusModel sbm = new ServiceBusModel
+                    {
+                        Method = Method.PATCH,
+                        JsonPatchItem = new JsonPatchUtil { ops = item.Operations },
+                        DummyDso = new DummyDso { Id=id},   
+                    };
+
+                    await _queue.SendMessageAsync(sbm, "vkqueue");
                 });
 
             }

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using projectTest.Domain.DSO;
-using projectTest.Domain.Models;
+using SharedDummy.Domain.DSO;
+using SharedDummy.Domain.Models;
 
-namespace projectTest.Domain
+namespace SharedDummy.Domain
 {
     public class AutoMapperProfile : Profile
     {
