@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using projectTest.Services.Interfaces;
 using SharedDummy.Domain;
 using SharedDummy.Domain.Models;
@@ -13,19 +15,33 @@ namespace projectTest.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IDummyService _dummyService;
+        private IMemoryCache _memoryCache;
 
-        public DummyController(IMapper mapper, IDummyService dummyService)
+        public DummyController(IMapper mapper, IDummyService dummyService, IMemoryCache cache)
         {
             _mapper = mapper;
             _dummyService = dummyService;
+            _memoryCache = cache;
         }
 
 
         //GET: api/<controller>  
         [HttpGet]
-        public Task<List<Dummy>> GetAll()
+        public async Task<List<Dummy>> GetAll()
         {
-            return _dummyService.GetAllDummies();
+            List<Dummy> dummies = new List<Dummy>();
+
+            if(!_memoryCache.TryGetValue("GETALL", out dummies))
+            {
+                dummies = await _dummyService.GetAllDummies();
+                var cacheEntryOptions = new MemoryCacheEntryOptions().
+                    SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+                _memoryCache.Set("GETALL", dummies, cacheEntryOptions);
+                    
+            }
+
+            return dummies;
         }
 
         [HttpPost]

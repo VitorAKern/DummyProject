@@ -1,3 +1,4 @@
+using Microsoft.Azure.ServiceBus;
 using projectTest.Repository;
 using projectTest.Repository.Interfaces;
 using projectTest.Services;
@@ -34,16 +35,19 @@ builder.Services.AddSingleton<IDummyRepository>(cosmosDbService);
 
 
 builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddTransient<IQueueService, QueueService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddTransient<IQueueService, QueueService>();
+builder.Services.AddHostedService<ConsumerService>();
+builder.Services.AddSingleton<IQueueClient>(x => new QueueClient("Endpoint=sb://vkservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=n2ikDfj1a9z/rInbn+QDgJozXzvhm/w5YzAJS1jNBQ4=", "vkqueue"));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IDummyService, DummyService>();
-//builder.Services.AddScoped<IDummyRepository, OperationBlobRepository>();
+builder.Services.AddTransient<IDummyService, DummyService>();
 
 var app = builder.Build();
 

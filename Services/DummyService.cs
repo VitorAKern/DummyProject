@@ -79,7 +79,7 @@ namespace projectTest.Services
 
                 await retryPolicy.ExecuteAsync(async () =>
                 {
-                    return _mapper.Map<List<DummyDso>, List<Dummy>>(await _dummyRepo.GetDummyAsync("SELECT * FROM Dummy"));
+                    response = _mapper.Map<List<DummyDso>, List<Dummy>>(await _dummyRepo.GetDummyAsync("SELECT * FROM Dummy"));
                 });
 
                 return response;
